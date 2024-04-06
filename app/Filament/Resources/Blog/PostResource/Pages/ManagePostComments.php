@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Blog\PostResource\Pages;
 
 use App\Filament\Resources\Blog\PostResource;
-use Filament\Actions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\IconEntry;
@@ -13,8 +12,6 @@ use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ManagePostComments extends ManageRelatedRecords
 {
@@ -26,7 +23,16 @@ class ManagePostComments extends ManageRelatedRecords
 
     public function getTitle(): string | Htmlable
     {
-        return "Manage {$this->getRecordTitle()} Comments";
+        $recordTitle = $this->getRecordTitle();
+
+        $recordTitle = $recordTitle instanceof Htmlable ? $recordTitle->toHtml() : $recordTitle;
+
+        return "Manage {$recordTitle} Comments";
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return 'Comments';
     }
 
     public static function getNavigationLabel(): string

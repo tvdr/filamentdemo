@@ -27,7 +27,7 @@ class CustomerResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
     {
@@ -105,6 +105,7 @@ class CustomerResource extends Resource
             ]);
     }
 
+    /** @return Builder<Customer> */
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with('addresses')->withoutGlobalScope(SoftDeletingScope::class);

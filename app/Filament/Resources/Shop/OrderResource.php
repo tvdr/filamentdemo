@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\Shop;
 
 use App\Enums\OrderStatus;
+use App\Filament\Clusters\Products\Resources\ProductResource;
 use App\Filament\Resources\Shop\OrderResource\Pages;
 use App\Filament\Resources\Shop\OrderResource\RelationManagers;
 use App\Filament\Resources\Shop\OrderResource\Widgets\OrderStats;
 use App\Forms\Components\AddressForm;
-use App\Models\Blog\Category;
 use App\Models\Shop\Order;
 use App\Models\Shop\Product;
 use Filament\Forms;
@@ -36,7 +36,7 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
     {
@@ -194,6 +194,7 @@ class OrderResource extends Resource
         ];
     }
 
+    /** @return Builder<Order> */
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->withoutGlobalScope(SoftDeletingScope::class);
@@ -213,6 +214,7 @@ class OrderResource extends Resource
         ];
     }
 
+    /** @return Builder<Order> */
     public static function getGlobalSearchEloquentQuery(): Builder
     {
         return parent::getGlobalSearchEloquentQuery()->with(['customer', 'items']);
@@ -220,9 +222,13 @@ class OrderResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::$model::where('status', 'new')->count();
+        /** @var class-string<Model> $modelClass */
+        $modelClass = static::$model;
+
+        return (string) $modelClass::where('status', 'new')->count();
     }
 
+    /** @return Forms\Components\Component[] */
     public static function getDetailsFormSchema(): array
     {
         return [
@@ -265,19 +271,19 @@ class OrderResource extends Resource
                 ->createOptionAction(function (Action $action) {
                     return $action
                         ->modalHeading('Create customer')
-                        ->modalButton('Create customer')
+                        ->modalSubmitActionLabel('Create customer')
                         ->modalWidth('lg');
                 }),
 
-            Forms\Components\Select::make('status')
+            Forms\Components\ToggleButtons::make('status')
+                ->inline()
                 ->options(OrderStatus::class)
-                ->required()
-                ->native(false),
+                ->required(),
 
             Forms\Components\Select::make('currency')
                 ->searchable()
                 ->getSearchResultsUsing(fn (string $query) => Currency::where('name', 'like', "%{$query}%")->pluck('name', 'id'))
-                ->getOptionLabelUsing(fn ($value): ?string => Currency::find($value)?->getAttribute('name'))
+                ->getOptionLabelUsing(fn ($value): ?string => Currency::firstWhere('id', $value)?->getAttribute('name'))
                 ->required(),
 
             AddressForm::make('address')

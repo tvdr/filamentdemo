@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Blog;
 
 use App\Filament\Resources\Blog\PostResource\Pages;
-use App\Filament\Resources\Blog\PostResource\RelationManagers;
 use App\Models\Blog\Post;
 use Filament\Forms;
 use Filament\Forms\Components\SpatieTagsInput;
@@ -34,6 +33,8 @@ class PostResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?int $navigationSort = 0;
+
+    protected static SubNavigationPosition $subNavigationPosition = SubNavigationPosition::Top;
 
     public static function form(Form $form): Form
     {
@@ -106,7 +107,8 @@ class PostResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\BadgeColumn::make('status')
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
                     ->getStateUsing(fn (Post $record): string => $record->published_at?->isPast() ? 'Published' : 'Draft')
                     ->colors([
                         'success' => 'Published',
@@ -240,6 +242,7 @@ class PostResource extends Resource
         ];
     }
 
+    /** @return Builder<Post> */
     public static function getGlobalSearchEloquentQuery(): Builder
     {
         return parent::getGlobalSearchEloquentQuery()->with(['author', 'category']);
